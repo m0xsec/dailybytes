@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /tags/
+Disallow: /categories/
+Sitemap: https://m0x.io/sitemap.xml
+User-agent: ia_archiver
+Disallow: /
