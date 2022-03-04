@@ -36,7 +36,7 @@ curl -sf https://keybase.io/m0x/pgp_keys.asc | gpg --import
 
 ## Say Hi!
 * [Keybase](https://keybase.io/m0x)
-* [Twitter](https://twitter.com/m0xxz)
+* [Twitter](https://twitter.com/m0xsec)
 
 You can also email me at the address below. I'd recommend encrypting your communications to me, if you can.
 
