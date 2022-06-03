@@ -63,6 +63,8 @@ sda                                   8:0    0   3.6T  0 disk
 └─sda1                                8:1    0   3.6T  0 part  
 sdb                                   8:16   0   4.5T  0 disk  
 └─sdb1                                8:17   0   4.5T  0 part  
+sdc                                   8:18   0   8.5T  0 disk  
+└─sdc1                                8:19   0   8.5T  0 part  
 
 nvme1n1                             259:0    0 931.5G  0 disk  
 ├─nvme1n1p1                         259:4    0   100M  0 part  
@@ -195,7 +197,45 @@ To add the `wheel` group to the suderos file we will want uncomment the followin
 This will allow members of the `wheel` group to execute any command as root.
 
 ### Hostname and Locale Generation
-blah yo
+Your system's hostname can be whatever you want, all you need to do is put it in the `/etc/hostname` file.
+```
+$ echo <hostname> > /etc/hostname
+```
+
+We will also want to define this hostname in our `/etc/hosts/` file, as follows:
+```
+127.0.0.1 localhost
+::1 localhost
+127.0.1.1 <hostname>.localdomain <hostname>
+```
+
+### Locale Generation and Timezone
+Another important thing we need to do is define our language locale. You will want to open the `/etc/locale.gen` file in your editor of choice and uncomment the lines that are relevant to your language. For me, I went with U.S English, with UTF-8 encoding.
+```
+en_US.UTF-8 UTF-8
+```
+
+Now you will need to set the locale and generate:
+```
+$ echo en_US.UTF-8 UTF-8 > /etc/locale.conf
+$ locale-gen
+```
+
+To set the timezone, you will need to figure out the correct timezone string based on your region. An easy way to do that is to use `grep`:
+```
+$ timedatectl list-timezones | grep <region>
+```
+
+For me, I picked `America/Los_Angeles`. Now to set the timezone you picked, and sync it to your system clock:
+```
+$ ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime
+$ hwclock --systohc
+```
+
+You can run `date` to verify the current system time.
+
+### initramfs Configuration and Generation
+blah blah blah
 
 # Bootloader 
 blah blah here
@@ -217,6 +257,12 @@ blah blah here
 
 # NVIDIA
 blah blah here
+
+# Additional Firmware
+The `linux-firmware` package covers most firmware for common hardware devices, though I had to install some additional packages to ensure that my system was stable.
+```
+$ pacman -S linux-firmware-qlogic aic94xx-firmware wd719x-firmware
+```
 
 
 `<3 m0x`
