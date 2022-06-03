@@ -159,7 +159,7 @@ If you are using an AMD CPU, you will want amd-ucode and not intel-ucode. Also, 
 $ pacstrap /mnt linux-zen linux-zen-headers linux-firmware base base-devel btrfs-progs intel-ucode efibootmgr networkmanager dialog wpa_supplicant bluez bluez-utils mtools dosfstools git xdg-utils xdg-user-dirs alsa-utils pipewire pipewire-alsa pipewire-pulse apparmor sbctl vim zsh 
 ```
 
-Feel free to change this list to fit your needs. You can always install more packages later.
+Feel free to change this list to fit your needs. You can always install more packages later. Also, feel free to replace `vim` with your editor of choice :)
 
 After the `pacstrap` command finishes, you will want to generate your `/etc/fstab` file. This handy command will generate this file based on your current mount points. Cool, right?
 ```
@@ -175,6 +175,11 @@ $ arch-chroot /mnt/
 ```
 
 You will now be presented with a root user prompt. 
+
+Go ahead and enable the following services, so we don't forget!
+```
+$ systemctl enable NetworkManager apparmor bluetooth
+```
 
 ### User Accounts
 First things first, we need to set a root password. Make sure you pick something secure. Again, consider your threat model!
@@ -235,10 +240,53 @@ $ hwclock --systohc
 You can run `date` to verify the current system time.
 
 ### initramfs Configuration and Generation
-blah blah blah
+The initramfs configuration is super important (not to mention super neat). I would reccomend that you take some time to familarize yourself with [`mkinitcpio`](https://wiki.archlinux.org/title/mkinitcpio), which is the tool used to create the initial ramdisk (initramfs).
+
+To start, we will need to modify `/etc/mkinitcpio.conf` to make changes to the `MODULES` and `HOOKS` sections. Go ahead and open that file in your editor of choice and set those lines to the following:
+```
+MODULES=(btrfs)
+HOOKS=(base udev systemd autodetect keyboard modconf block sd-encrypt filesystems)
+```
+
+Once that is done, it is time to generate our new initramfs:
+```
+$ mkinitcpio -P
+```
+
+If you notice some warning messages about missing firmware, check the [Additional Firmware](#additional-firmware) section towards the end of this guide. It is okay to ignore for the moment and likely won't cause and problems. Though if you are concerned, go ahead and check out that section then regenerate your initramfs after you install any additional firmware packages.
 
 # Bootloader 
-blah blah here
+If you don't want to use systemd-boot, follow insturctions for your bootloader of choice instead. Though if you are cool with systemd-boot, go ahead and install it with the following command:
+```
+$ bootctl --path=/boot install
+```
+
+Now to make our Arch boot entry. You are going to see the UUID of your root partition for this, so to make things a bit easier, I would reccomend adding the UUID to the boot entry file, twice:
+{{< notice warning >}}
+Make sure you are using the correct drive and are specifing your root partition.
+{{< /notice >}}
+```
+$ echo `blkid -S UUID -o value /dev/nvme1n1p2` >> /boot/loader/entries/arch.conf
+$ echo `blkid -S UUID -o value /dev/nvme1n1p2` >> /boot/loader/entries/arch.conf
+```
+
+Go ahead and open `/boot/loader/entries/arch.conf` in your editor of choice and add the following:
+{{< notice warning >}}
+If you did not use linux-zen, make sure you specify that in this file. Also, if you used amd-ucode, use that for your initrd instead.
+{{< /notice >}}
+```
+title Arch Linux
+linux /vmlinuz-linux-zen
+initrd /intel-ucode.img
+initrd /initramfs-linux-zen.img
+options nvidia-drm.modeset=1 apparmor=1 security=apparmor rd.luks.name=<UUID>=luks root=/dev/mapper/luks rootflags=subvol=@
+rd.luks.options=<UUID>=tpm2-device=auto,discard rw quiet lsm=lockdown,yama,apparmor,bpf
+
+```
+
+The `nvidia-drm.modeset=1` kernel option will be needed for our NVIDIA driver, which we will install [later](#nvidia). If you won't be using the NVIDIA driver, go ahead and remove this.
+
+Also, if you are not going to use TPM 2.0 for LUKS, go ahead and remove the `tpm2-device` LUKS option.
 
 # GNOME 42 (Or whatever you want)
 blah blah here
