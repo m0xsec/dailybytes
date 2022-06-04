@@ -114,7 +114,7 @@ Consider your threat model when creating your passphrase.
 {{< /notice >}}
 Our root file system will be encrypted, so we will need a strong passphrase. Depending on your threat model, you may want to be careful about selecting a secure passphrase; also be mindful when it comes to storage of this passphrase. No sticky notes!
 
-When creating the LUKS volume, make sure you are selecting your root partition, and not the EFI boot partition. In my case, my second partition (the root partition) is `nvme1n1p2`.
+When creating the LUKS volume, make sure you are selecting your root partition, and not the EFI boot partition. In my case, the second partition (the root partition) is `nvme1n1p2`.
 ```
 $ cryptsetup luksFormat /dev/nvme1n1p2
 ```
