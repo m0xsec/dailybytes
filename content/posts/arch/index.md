@@ -406,10 +406,10 @@ After you install Timeshift, go ahead and open it up and go through the settings
 I am only using snapshots on my root subvolume, though you can enable snapshots on your home subvolume as well. I am using Timeshift for my system level stuff and `duplicity` for my user data.
 
 # TPM 2.0 Enrollment
-{{< notice tip >}}
+{{< notice warning >}}
 Depending on your situation, doing this might be a bad idea.
 {{< /notice >}}
-I liked the idea of having my TPM unlock my LUKS volume on boot to speed up the boot process, creating a more seamless experience. Depending on our situation, enrolling your TPM as one of your LUKS keyslots might be a bad idea. As always, consider your threat model. Doing this is totally optional!
+I liked the idea of having my TPM unlock the LUKS volume on boot to speed up the boot process, creating a more seamless experience. Depending on our situation, enrolling your TPM as one of your LUKS keyslots might be a bad idea. As always, consider your threat model.
 
 Verify that your TPM is detected, and that it is version 2.0:
 ```
@@ -428,7 +428,7 @@ PATH        DEVICE DRIVER
 
 ```
 
-You should see your TPM listed in the output, similar to what is shown above. Assuming that looks good, you will now want to enroll your TPM to one of your LUKS keyslots on your LUKS volume, in my case that is parition 2:
+You should see your TPM listed in the output, similar to what is shown above. Assuming that looks good, you will now want to enroll your TPM to one of your keyslots on your LUKS volume, in my case that is parition 2:
 ```
 $ systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=0,7 /dev/nvme1n1p2
 ```
@@ -446,7 +446,70 @@ rd.luks.options=<UUID>=tpm2-device=auto,discard rw quiet lsm=lockdown,yama,appar
 If you reboot, you should see your system go straight to the login screen. If the TPM is tampered with or removed, you will be prompted to enter your passphrase like before.
 
 # Secure Boot
-blah blah here
+Before you enable Secure Boot, you will need to go into your BIOS and enable "Setup Mode". This will allow key enrollment. Depending on your BIOS, you may have to first delete all of your pre-existing keys before Setup Mode can be toggled. Refer to your motherboard's documentation if you run into issues. 
+
+You may also wish to keep vendor keys enrolled so you can continue to boot into Windows and use other boot utilities. If you don't know what you are doing, chances are you will want to keep these vendor keys.
+
+Once your BIOS is in Secure Boot Setup Mode, go ahead and boot back into Arch, and run the following command to verify:
+```
+$ sbctl status
+Installed:	✓ sbctl is installed
+Setup Mode:	✗ Enabled
+Secure Boot:	✗ Disabled
+```
+
+You should see output similar to what is shown above. The important part is to make sure that "Setup Mode" says enabled and that "Secure Boot" says disabled.
+
+Now, with that out of the way, you can create secure boot keys and enroll them, then sign your kernel files. To do this, I used `sbctl`. They have some excellent documention on their [Github repo](https://github.com/Foxboron/sbctl#usage).
+
+To create keys and enroll them, do the following (note, this will ensure that Microsoft's keys are also enrolled. Remove `--microsoft` if you don't want that):
+```
+$ sbctl create-keys
+$ sbctl enroll-keys --microsoft
+```
+
+Now we need to sign our EFI boot files. To figure out which files need signing, we can run `sbctl verify`:
+```
+$ sbctl verify
+Verifying file database and EFI images in /efi...
+✘ /boot/EFI/BOOT/BOOTX64.EFI is not signed
+✘ /boot/EFI/systemd/systemd-bootx64.efi  is not signed
+✘ /boot/vmlinuz-linux is not signed
+✘ /boot/vmlinuz-linux-zen is not signed
+```
+
+To sign these files, simply run:
+```
+$ sbctl sign -s /boot/EFI/BOOT/BOOTX64.EFI
+$ sbctl sign -s /boot/EFI/systemd/systemd-bootx64.efi 
+$ sbctl sign -s /boot/vmlinuz-linux
+$ sbctl sign -s /boot/vmlinuz-linux-zen
+```
+
+To verify that those files were signed, run `sbctl verify` again:
+```
+$ sbctl verify
+Verifying file database and EFI images in /efi...
+✔ /boot/EFI/BOOT/BOOTX64.EFI is signed
+✔ /boot/EFI/systemd/systemd-bootx64.efi  is signed
+✔ /boot/vmlinuz-linux is signed
+✔ /boot/vmlinuz-linux-zen is signed
+```
+
+You may also need to generate an EFI Stub, depending on your configuration. I didn't need to do this on my end in order for this to work. To learn more, check out the `sbctl` [usage guide](https://github.com/Foxboron/sbctl#generate-efi-stub).
+
+Now you can reboot and enable Secure Boot! Once you log back in, you can verify that everything is working by running `sbctl status`:
+```
+$ sbctl status
+Installed:	✓ sbctl is installed
+Owner GUID:	<UUID>
+Setup Mode:	✓ Disabled
+Secure Boot:	✓ Enabled
+Vendor Keys:	microsoft
+
+```
+
+Congrats, you now have Secure Boot working!
 
 # Additional Firmware
 The `linux-firmware` package covers most firmware for common hardware devices, though I had to install some additional packages to ensure that my system was stable.
