@@ -291,7 +291,7 @@ rd.luks.options=<UUID>=discard rw quiet lsm=lockdown,yama,apparmor,bpf
 
 The `nvidia-drm.modeset=1` kernel option will be needed for our NVIDIA driver, which we will install [later](#nvidia). If you won't be using the NVIDIA driver, go ahead and remove this.
 
-# GNOME 42 (Or whatever you want)
+# GNOME 42
 Installing the latest version of GNOME is pretty straight forward. At the time of writing, GNOME 42 is the latest and greatest! You can install it like this:
 ```
 $ pacman -S gnome gdm gnome-tweaks firefox
