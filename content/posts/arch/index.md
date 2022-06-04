@@ -32,7 +32,7 @@ Please do your own research and check the latest [Arch Install Guide](https://wi
 # Base Install
 The [Arch Install Guide](https://wiki.archlinux.org/title/Installation_guide) is honestly the best way to get started and is a great reference if you get stuck along the way.
 
-Before you get started, make sure that you have UEFI Mode enabled and Secure Boot disabled on your system. We will enable Secure Boot later in this guide.
+Before you get started, make sure that you have UEFI Mode enabled and Secure Boot disabled on your system. We will enable [Secure Boot](#secure-boot) later in this guide.
 
 ## WiFi and Syncing System Clock
 You will probably want to connect to WiFi, unless you are directly plugged in or are setting up an air-gapped system.
