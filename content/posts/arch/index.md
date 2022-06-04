@@ -1,7 +1,7 @@
 ---
 title: "I use Arch, btw"
-date: 2022-06-02T23:25:59-07:00
-draft: true
+date: 2022-06-03T22:30:00-07:00
+draft: false
 tags: ["arch", "linux", "guide", "tpm2.0", "btrfs", "apparmor", "secureboot"]
 categories: ["linux"]
 showToc: true
@@ -14,7 +14,7 @@ cover:
     hidden: false # only hide on current single page
 ---
 
-I've been wanting to install Arch on my primary workstation for a while though was pretty overwhelmed with figuring out what sort of configuration I wanted. I now have something that I like and wanted to outline what I did. This is mostly for my own reference and documentation, though please feel free to use this and adapt it to your own needs!
+I've been wanting to install Arch on my primary workstation for a while though I was pretty overwhelmed with figuring out what sort of configuration I wanted. I now have something that I like and wanted to outline what I did. This is mostly for my own reference and documentation, though please feel free to use this and adapt it to your own needs!
 
 This guide will outline how to setup a clean install of Arch linux with the following:
 - Secure Boot.
@@ -37,7 +37,7 @@ Before you get started, make sure that you have UEFI Mode enabled and Secure Boo
 ## WiFi and Syncing System Clock
 You will probably want to connect to WiFi, unless you are directly plugged in or are setting up an air-gapped system.
 
-[`iwctl`](https://wiki.archlinux.org/title/Iwd#iwctl) is probably the easiet way to do this.
+[`iwctl`](https://wiki.archlinux.org/title/Iwd#iwctl) is probably the easiest way to do this.
 
 ```
 $ iwctl
@@ -83,7 +83,7 @@ nvme0n1                             259:1    0 931.5G  0 disk
 
 My system has multiple hard drives. In this case, I am going to install Arch on one of the 1TB NVME SSDs, `nvme1n1`. 
 
-Now to create the system partitions, lets start with the EFI boot partition:
+Now to create the system partitions, let's start with the EFI boot partition:
 ```
 $ gdisk /dev/nvme1n1
 Command (? for help): o
@@ -103,7 +103,7 @@ Default last sector.
 Default partition type.
 ```
 
-With our new paritions made, it si time to write the changes!
+With our new partitions made, it is time to write the changes!
 ```
 Command (? for help): w
 ```
@@ -114,18 +114,18 @@ Consider your threat model when creating your passphrase.
 {{< /notice >}}
 Our root file system will be encrypted, so we will need a strong passphrase. Depending on your threat model, you may want to be careful about selecting a secure passphrase; also be mindful when it comes to storage of this passphrase. No sticky notes!
 
-When creating the LUKS volume, make sure you are selecting your root parition, and not the EFI boot partition. In my case, my second parition (the root parition) is `nvme1n1p2`.
+When creating the LUKS volume, make sure you are selecting your root partition, and not the EFI boot partition. In my case, my second partition (the root partition) is `nvme1n1p2`.
 ```
 $ cryptsetup luksFormat /dev/nvme1n1p2
 ```
 
-Once that finishes, you are going to want to open the newly created LUKS volume. You will need to name the volume when you open it, I typically just call it "luks", though you can pick whatever you want. Just make sure you stay consistant!
+Once that finishes, you are going to want to open the newly created LUKS volume. You will need to name the volume when you open it, I typically just call it "luks", though you can pick whatever you want. Just make sure you stay consistent!
 ```
 $ cryptsetup open /dev/nvme1n1p2 luks
 ```
 
 ## Format EFI and Root Partitions
-Simple and easy, format the EFI boot parition with FAT32:
+Simple and easy, format the EFI boot partition with FAT32:
 
 `$ mkfs.vfat -F32 /dev/nvme1n1p1` 
 
@@ -168,7 +168,7 @@ After the `pacstrap` command finishes, you will want to generate your `/etc/fsta
 $ genfstab -U /mnt >> /mnt/etc/fstab
 ```
 
-Now for the exciting part, lets `chroot` into our new linux install so we can do some additional configuration!
+Now for the exciting part, let's `chroot` into our new linux install so we can do some additional configuration!
 
 ## Chroot and System Configuration
 To `chroot` into the new linux install you will run the following command:
@@ -190,7 +190,7 @@ $ passwd
 ```
 
 
-We will also want to create our user account. I am adding the user to the `wheel` group, as in a moment we will be granting this user group access to use the `sudo` command for privledge escalation. Also, when setting the password, again I say, consider your threat model :3
+We will also want to create our user account. I am adding the user to the `wheel` group, as in a moment we will be granting this user group access to use the `sudo` command for privilege escalation. Also, when setting the password, again I say, consider your threat model :3
 ```
 $ useradd -mG wheel <username>
 $ passed <username>
@@ -242,7 +242,7 @@ $ hwclock --systohc
 You can run `date` to verify the current system time.
 
 ### initramfs Configuration and Generation
-The initramfs configuration is super important (not to mention super neat). I would reccomend that you take some time to familarize yourself with [`mkinitcpio`](https://wiki.archlinux.org/title/mkinitcpio), which is the tool used to create the initial ramdisk (initramfs).
+The initramfs configuration is super important (not to mention super neat). I would recommend that you take some time to familiarize yourself with [`mkinitcpio`](https://wiki.archlinux.org/title/mkinitcpio), which is the tool used to create the initial ramdisk (initramfs).
 
 To start, we will need to modify `/etc/mkinitcpio.conf` to make changes to the `MODULES` and `HOOKS` sections. Go ahead and open that file in your editor of choice and set those lines to the following:
 ```
@@ -258,14 +258,14 @@ $ mkinitcpio -P
 If you notice some warning messages about missing firmware, check the [Additional Firmware](#additional-firmware) section towards the end of this guide. It is okay to ignore for the moment and likely won't cause and problems. Though if you are concerned, go ahead and check out that section then regenerate your initramfs after you install any additional firmware packages.
 
 # Bootloader 
-If you don't want to use systemd-boot, follow insturctions for your bootloader of choice instead. Though if you are cool with systemd-boot, go ahead and install it with the following command:
+If you don't want to use systemd-boot, follow instructions for your bootloader of choice instead. Though if you are cool with systemd-boot, go ahead and install it with the following command:
 ```
 $ bootctl --path=/boot install
 ```
 
-Now to make our Arch boot entry. You are going to see the UUID of your root partition for this, so to make things a bit easier, I would reccomend adding the UUID to the boot entry file, twice:
+Now to make our Arch boot entry. You are going to see the UUID of your root partition for this, so to make things a bit easier, I would recommend adding the UUID to the boot entry file, twice:
 {{< notice warning >}}
-Make sure you are using the correct drive and are specifing your root partition.
+Make sure you are using the correct drive and are specifying your root partition.
 {{< /notice >}}
 ```
 $ echo `blkid -S UUID -o value /dev/nvme1n1p2` >> /boot/loader/entries/arch.conf
@@ -301,10 +301,10 @@ Once that is done installing, you will want to enable to GNOME Desktop Manager s
 $ systemctl enable gdm
 ```
 
-If you are looking to install a different Window Manager / Desktop Enviornment, check the [Arch Wiki](https://wiki.archlinux.org/title/desktop_environment) for guidance on how to do that.
+If you are looking to install a different Window Manager / Desktop Environment, check the [Arch Wiki](https://wiki.archlinux.org/title/desktop_environment) for guidance on how to do that.
 
 # NVIDIA
-To install the NVIDIA propriatary drivers, and to get them to play nice with Wayland and GDM, we need to do a few things.
+To install the NVIDIA proprietary drivers, and to get them to play nice with Wayland and GDM, we need to do a few things.
 
 First, install the following:
 ```
@@ -353,7 +353,7 @@ $ reboot
 # Apparmor Profiles
 Assuming everything went well, you should now be booted into your fresh Arch install and logged into your local user account :3
 
-Now that we're here, lets verify that Apparmor is working.
+Now that we're here, let's verify that Apparmor is working.
 ```
 $ sudo aa-enabled
 Yes
@@ -362,7 +362,7 @@ Yes
 The output of `Yes` will indicate that Apparmor is enabled. To get the current status and list of profiles loaded, run the following:
 ```
 $ sudo aa-status
-pparmor module is loaded.
+apparmor module is loaded.
 50 profiles are loaded.
 50 profiles are in enforce mode.
    ...
@@ -382,7 +382,7 @@ pparmor module is loaded.
 If you aren't getting output similar to what is outlined above, head on over to the [Arch Wiki](https://wiki.archlinux.org/title/AppArmor) for guidance.
 
 # Timeshift
-Timeshift will be the application we use to create and manage BTRFS snapshots of our root subvolume. This application isn't yet avaiable in Arch's official repos, though like anything else, we can find it in the Arch User Repository (AUR).
+Timeshift will be the application we use to create and manage BTRFS snapshots of our root subvolume. This application isn't yet available in Arch's official repos, though like anything else, we can find it in the Arch User Repository (AUR).
 
 An easy and convenient way to install and manage AUR packages on your system is to use an AUR helper (or write your own ;3). There are several helpers to pick from, though today I will be using [`paru`](https://github.com/morganamilo/paru). One of the main reasons I like `paru` is that it allows you to review and edit the `PKGBUILD`, in-line, before it runs. If you don't care about that, or don't enjoy using `vim` to edit files, I'd suggest checking out `yay`.
 
@@ -401,7 +401,7 @@ $ paru -S timeshift
 Think about your disaster and data recovery plan and test it often!
 {{< /notice >}}
 
-After you install Timeshift, go ahead and open it up and go through the settings / setup process. Make sure you select the `BTRFS` snapshot type. The snapshot location is up to you, though the most convenient is probably to have it store on the root subvolume. 
+After you install Timeshift, go ahead and open it up and go through the settings / setup process. Make sure you select the `BTRFS` snapshot type. The snapshot location is up to you, though the most convenient is probably to have it stored on the root subvolume. 
 
 I am only using snapshots on my root subvolume, though you can enable snapshots on your home subvolume as well. I am using Timeshift for my system level stuff and `duplicity` for my user data.
 
@@ -409,7 +409,7 @@ I am only using snapshots on my root subvolume, though you can enable snapshots 
 {{< notice warning >}}
 Depending on your situation, doing this might be a bad idea.
 {{< /notice >}}
-I liked the idea of having my TPM unlock the LUKS volume on boot to speed up the boot process, creating a more seamless experience. Depending on our situation, enrolling your TPM as one of your LUKS keyslots might be a bad idea. As always, consider your threat model.
+I liked the idea of having my TPM unlock the LUKS volume on boot to speed up the boot process, creating a more seamless experience. Depending on our situation, enrolling your TPM as one of your LUKS key slots might be a bad idea. As always, consider your threat model.
 
 Verify that your TPM is detected, and that it is version 2.0:
 ```
@@ -428,7 +428,7 @@ PATH        DEVICE DRIVER
 
 ```
 
-You should see your TPM listed in the output, similar to what is shown above. Assuming that looks good, you will now want to enroll your TPM to one of your keyslots on your LUKS volume, in my case that is parition 2:
+You should see your TPM listed in the output, similar to what is shown above. Assuming that looks good, you will now want to enroll your TPM to one of your key slots on your LUKS volume, in my case that is partition 2:
 ```
 $ systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=0,7 /dev/nvme1n1p2
 ```
@@ -460,7 +460,7 @@ Secure Boot:	✗ Disabled
 
 You should see output similar to what is shown above. The important part is to make sure that "Setup Mode" says enabled and that "Secure Boot" says disabled.
 
-Now, with that out of the way, you can create secure boot keys and enroll them, then sign your kernel files. To do this, I used `sbctl`. They have some excellent documention on their [Github repo](https://github.com/Foxboron/sbctl#usage).
+Now, with that out of the way, you can create secure boot keys and enroll them, then sign your kernel files. To do this, I used `sbctl`. They have some excellent documentation on their [Github repo](https://github.com/Foxboron/sbctl#usage).
 
 To create keys and enroll them, do the following (note, this will ensure that Microsoft's keys are also enrolled. Remove `--microsoft` if you don't want that):
 ```
@@ -512,15 +512,17 @@ Vendor Keys:	microsoft
 Congrats, you now have Secure Boot working!
 
 # Additional Firmware
-The `linux-firmware` package covers most firmware for common hardware devices, though I had to install some additional packages to ensure that my system was stable.
+The `linux-firmware` package covers most firmware for common hardware devices, though I had to install some additional packages to ensure that my system was stable. When you [generate your initframfs](#initramfs-configuration-and-generation), you may see some warning messages about firmware not being installed. Search around for the firmware that is mentioned and you will likely find a package for it in the [AUR](https://aur.archlinux.org/packages?O=0&SeB=nd&K=firmware&outdated=&SB=p&SO=d&PP=50&submit=Go).
 
 ```
 $ pacman -S linux-firmware-qlogic linux-firmware-iwlwifi-git
 $ paru -S upd72020x-fw aic94xx-firmware wd719x-firmware
 ```
 
+At this point you're done! You can probably start enjoying your new Arch Linux install, so go have fun :3
+
 # References
-I used so so many references during this process. The list below are the ones I found to be the most helpful.
+I used so, so many references during this process. The list below are the ones I found to be the most helpful.
 
 - https://wiki.archlinux.org/title/Installation_guide
 - https://wiki.archlinux.org/title/Iwd#iwctl
@@ -538,6 +540,8 @@ I used so so many references during this process. The list below are the ones I 
 - https://github.com/Foxboron/sbctl#usage
 - https://odysee.com/@EF-TechMadeSimple:3/arch-linux-install-january-2021-iso-2:a
 - https://wiki.tnonline.net/w/Btrfs/Space_Cache
+
+
 
 
 
