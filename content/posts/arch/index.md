@@ -203,7 +203,7 @@ To add the `wheel` group to the suderos file we will want uncomment the followin
 
 This will allow members of the `wheel` group to execute any command as root.
 
-### Hostname and Locale Generation
+### System Hostname and Hosts Configuration
 Your system's hostname can be whatever you want, all you need to do is put it in the `/etc/hostname` file.
 ```
 $ echo <hostname> > /etc/hostname
@@ -222,6 +222,9 @@ Another important thing we need to do is define our language locale. You will wa
 en_US.UTF-8 UTF-8
 ```
 
+{{< notice note>}}
+You may need to also select your locale in GNOME's settings later.
+{{< /notice >}}
 Now you will need to set the locale and generate:
 ```
 $ echo en_US.UTF-8 UTF-8 > /etc/locale.conf
