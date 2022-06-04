@@ -258,7 +258,7 @@ Once that is done, it is time to generate our new initramfs:
 $ mkinitcpio -P
 ```
 
-If you notice some warning messages about missing firmware, check the [Additional Firmware](#additional-firmware) section towards the end of this guide. It is okay to ignore for the moment and likely won't cause and problems. Though if you are concerned, go ahead and check out that section then regenerate your initramfs after you install any additional firmware packages.
+If you notice some warning messages about missing firmware, check the [Additional Firmware](#additional-firmware) section towards the end of this guide. It is okay to ignore for the moment and likely won't cause any problems. Though if you are concerned, go ahead and check out that section then regenerate your initramfs after you install any additional firmware packages.
 
 # Bootloader 
 If you don't want to use systemd-boot, follow instructions for your bootloader of choice instead. Though if you are cool with systemd-boot, go ahead and install it with the following command:
