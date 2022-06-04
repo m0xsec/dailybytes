@@ -266,7 +266,7 @@ If you don't want to use systemd-boot, follow instructions for your bootloader o
 $ bootctl --path=/boot install
 ```
 
-Now to make our Arch boot entry. You are going to see the UUID of your root partition for this, so to make things a bit easier, I would recommend adding the UUID to the boot entry file, twice:
+Now to make our Arch boot entry. You are going to need the UUID of your root partition for this, so to make things a bit easier, I would recommend adding the UUID to the boot entry file, twice:
 {{< notice warning >}}
 Make sure you are using the correct drive and are specifying your root partition.
 {{< /notice >}}
