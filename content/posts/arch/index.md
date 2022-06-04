@@ -410,9 +410,9 @@ I am only using snapshots on my root subvolume, though you can enable snapshots 
 
 # TPM 2.0 Enrollment
 {{< notice warning >}}
-Depending on your situation, doing this might be a bad idea.
+Depending on your security situation, doing this might be a bad idea.
 {{< /notice >}}
-I liked the idea of having my TPM unlock the LUKS volume on boot to speed up the boot process, creating a more seamless experience. Depending on our situation, enrolling your TPM as one of your LUKS key slots might be a bad idea. As always, consider your threat model.
+I liked the idea of having my TPM unlock the LUKS volume on boot to speed up the boot process, creating a more seamless experience. Depending on your situation, enrolling your TPM as one of your LUKS key slots might be a bad idea. As always, consider your threat model.
 
 Verify that your TPM is detected, and that it is version 2.0:
 ```
