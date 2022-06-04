@@ -436,7 +436,7 @@ You should see your TPM listed in the output, similar to what is shown above. As
 $ systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=0,7 /dev/nvme1n1p2
 ```
 
-After than, you will need to add a new `rd.luks.options` option to your boot entry for Arch. Open `/boot/loader/entries/arch.conf` in your editor of choice, and add `tpm2-device=auto`. Your boot entry should now look something like this:
+After that, you will need to add a new `rd.luks.options` option to your boot entry for Arch. Open `/boot/loader/entries/arch.conf` in your editor of choice, and add `tpm2-device=auto`. Your boot entry should now look something like this:
 ```
 title Arch Linux
 linux /vmlinuz-linux-zen
